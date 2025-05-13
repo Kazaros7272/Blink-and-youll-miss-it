@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>CSV Quiz</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      max-width: 800px;
+      margin: auto;
+    }
+    h1 {
+      text-align: center;
+    }
+    #upload-section, #quiz-section {
+      margin-bottom: 20px;
+    }
+    .question-box {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 5px;
+    }
+    .question-text {
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .answer-input, .submit-btn, .next-btn {
+      margin-top: 10px;
+    }
+    .radio-container {
+      margin-top: 15px;
+    }
+    .radio-container label {
+      margin-right: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>CSV Quiz</h1>
+
+  <div id="upload-section">
+    <h2>Upload CSV (Questions,Answers)</h2>
+    <input type="file" id="fileInput" accept=".csv">
+    <button id="uploadBtn">Upload</button>
+  </div>
+
+  <div id="quiz-section" class="hidden">
+    <div class="question-box">
+      <p id="questionText" class="question-text"></p>
+      <input type="text" id="userAnswer" class="answer-input" placeholder="Type your answer here...">
+      <button id="submitAnswer" class="submit-btn">Submit Answer</button>
+      <div id="correctAnswerContainer" class="hidden">
+        <p><strong>Correct Answer:</strong> <span id="correctAnswer"></span></p>
+      </div>
+      <div id="assessmentContainer" class="hidden radio-container">
+        <p>Please self-assess:</p>
+        <label>
+          <input type="radio" name="assessment" value="Pass"> Pass
+        </label>
+        <label>
+          <input type="radio" name="assessment" value="Fail"> Fail
+        </label>
+      </div>
+      <button id="nextQuestion" class="next-btn hidden">Next Question</button>
+    </div>
+  </div>
+
+  <script>
+    let quizData = [];
+    let currentQuestionIndex = 0;
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const quizSection = document.getElementById('quiz-section');
+    const questionText = document.getElementById('questionText');
+    const userAnswerInput = document.getElementById('userAnswer');
+    const submitAnswerBtn = document.getElementById('submitAnswer');
+    const correctAnswerContainer = document.getElementById('correctAnswerContainer');
+    const correctAnswerSpan = document.getElementById('correctAnswer');
+    const assessmentContainer = document.getElementById('assessmentContainer');
+    const nextQuestionBtn = document.getElementById('nextQuestion');
+
+    let responses = [];
+
+    uploadBtn.addEventListener('click', () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        alert('Please select a CSV file.');
+        return;
+      }
+      if (file.name.slice(-4).toLowerCase() !== '.csv') {
+        alert('Only CSV files are allowed.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const text = event.target.result;
+        quizData = parseCSV(text); 
+        if (quizData.length === 0) {
+          alert('No valid questions found.');
+          return;
+        }
+        try {
+          localStorage.setItem('quizData', JSON.stringify(quizData));
+        } catch (e) {
+          console.warn('localStorage not available:', e);
+        }
+        document.getElementById('upload-section').classList.add('hidden');
+        quizSection.classList.remove('hidden');
+        showQuestion();
+      };
+      reader.readAsText(file);
+    });
+
+    function parseCSV(text) {
+      const rows = text.split('\n');
+      const data = [];
+      rows.forEach(row => {
+        const trimmedRow = row.trim();
+        if (trimmedRow) {
+          const columns = trimmedRow.split(',');
+          if (columns.length >= 2) {
+            const question = columns[0].trim();
+            const answer = columns[1].trim();
+            data.push({ question, answer });
+          }
+        }
+      });
+      return data;
+    }
+
+
+    function showQuestion() {
+      userAnswerInput.value = '';
+      correctAnswerContainer.classList.add('hidden');
+      correctAnswerSpan.textContent = '';
+      assessmentContainer.classList.add('hidden');
+      nextQuestionBtn.classList.add('hidden');
+
+      if (currentQuestionIndex < quizData.length) {
+        const currentItem = quizData[currentQuestionIndex];
+        questionText.textContent = `Question ${currentQuestionIndex + 1}: ${currentItem.question}`;
+        userAnswerInput.classList.remove('hidden');
+        submitAnswerBtn.classList.remove('hidden');
+      } else {
+        questionText.textContent = 'Quiz completed!';
+        userAnswerInput.classList.add('hidden');
+        submitAnswerBtn.classList.add('hidden');
+        assessmentContainer.classList.add('hidden');
+        nextQuestionBtn.classList.add('hidden');
+      }
+    }
+
+    submitAnswerBtn.addEventListener('click', () => {
+      const userResponse = userAnswerInput.value.trim();
+      const currentItem = quizData[currentQuestionIndex];
+      correctAnswerSpan.textContent = currentItem.answer;
+      correctAnswerContainer.classList.remove('hidden');
+      userAnswerInput.classList.add('hidden');
+      submitAnswerBtn.classList.add('hidden');
+      assessmentContainer.classList.remove('hidden');
+      nextQuestionBtn.classList.remove('hidden');
+      responses[currentQuestionIndex] = { userAnswer: userResponse, correctAnswer: currentItem.answer };
+    });
+
+    nextQuestionBtn.addEventListener('click', () => {
+      const radioButtons = document.getElementsByName('assessment');
+      let assessmentValue = null;
+      for (const radio of radioButtons) {
+        if (radio.checked) {
+          assessmentValue = radio.value;
+          break;
+        }
+      }
+      if (!assessmentValue) {
+        alert('Please select Pass or Fail before proceeding.');
+        return;
+      }
+      responses[currentQuestionIndex].assessment = assessmentValue;
+      radioButtons.forEach(radio => radio.checked = false);
+
+      currentQuestionIndex++;
+      showQuestion();
+    });
+  </script>
+</body>
+</html>
