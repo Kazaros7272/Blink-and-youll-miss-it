@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -8,7 +7,6 @@
   <title>Blink and you'll miss it!</title>
   <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
   <h1>Blink and you'll miss it!</h1>
 
@@ -23,20 +21,18 @@
       <p id="questionText" class="question-text"></p>
       <input type="text" id="userAnswer" class="answer-input" placeholder="Type your answer here...">
       <button id="submitAnswer" class="submit-btn">Submit Answer</button>
-      <div id="correctAnswerContainer" class="hidden">
-        <p><strong>Correct Answer:</strong> <span id="correctAnswer"></span></p>
-      </div>
-      <div id="assessmentContainer" class="hidden radio-container">
-        <p>Please self-assess:</p>
-        <label>
-          <input type="radio" name="assessment" value="Pass"> Pass
-        </label>
-        <label>
-          <input type="radio" name="assessment" value="Fail"> Fail
-        </label>
-      </div>
-      <button id="nextQuestion" class="next-btn hidden">Next Question</button>
     </div>
+  </div>
+
+  <div id="review-section" class="hidden">
+    <h2>Review and Self-Assess Your Answers</h2>
+    <div id="reviewContainer"></div>
+    <button id="submitAssessments" class="next-btn">Submit Self-Assessments</button>
+  </div>
+
+  <div id="results-section" class="hidden">
+    <h2>Your Results</h2>
+    <div id="resultsContainer"></div>
   </div>
 
   <script src="froggyCode.js"></script>
