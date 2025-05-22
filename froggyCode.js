@@ -1,119 +1,192 @@
 let quizData = [];
 let currentQuestionIndex = 0;
-const responses = []; 
+const responses = [];
 
 const uploadBtn = document.getElementById('uploadBtn');
 const fileInput = document.getElementById('fileInput');
-const quizSection = document.getElementById('quiz-section');
 const reviewSection = document.getElementById('review-section');
 const resultsSection = document.getElementById('results-section');
 
 const questionText = document.getElementById('questionText');
 const userAnswerInput = document.getElementById('userAnswer');
-const submitAnswerBtn = document.getElementById('submitAnswer');
+const submitAnswerMcqBtn = document.getElementById('submitAnswerMcq');
+const submitAnswerLongBtn = document.getElementById('submitAnswerLong');
 
 const reviewContainer = document.getElementById('reviewContainer');
 const submitAssessmentsBtn = document.getElementById('submitAssessments');
-
 const resultsContainer = document.getElementById('resultsContainer');
 
+
+let quizMode = ''; // 'long' or 'mcq'
+
+document.getElementById('mcqModeBtn').addEventListener('click', () => {
+  quizMode = 'mcq';
+  document.getElementById('mode-selection').classList.add('hidden');
+  document.getElementById('upload-section').classList.remove('hidden');
+});
+
+document.getElementById('longAnswerModeBtn').addEventListener('click', () => {
+  quizMode = 'long';
+  document.getElementById('mode-selection').classList.add('hidden');
+  document.getElementById('upload-section').classList.remove('hidden');
+});
+
 uploadBtn.addEventListener('click', () => {
-    const file = fileInput.files[0];
-    if (!file) {
+  const file = fileInput.files[0];
+
+  if (!file) {
     alert('Please select a CSV file.');
     return;
-    }
-    if (file.name.slice(-4).toLowerCase() !== '.csv') {
+  }
+
+  if (file.name.slice(-4).toLowerCase() !== '.csv') {
     alert('Only CSV files are allowed.');
     return;
-    }
-    const reader = new FileReader();
-    reader.onload = (event) => {
+  }
+
+  const reader = new FileReader();
+  reader.onload = (event) => {
     const text = event.target.result;
-    quizData = parseCSV(text);
-    if (quizData.length === 0) {
-        alert('No valid questions found.');
-        return;
+    const parsed = parseCSV(text);
+
+    // Check if file uploaded has a valid structure
+    const isValid = parsed.every(row => {
+      if (quizMode === 'mcq') return row.question && row.answer && Array.isArray(row.options) && row.options.length === 3;
+      if (quizMode === 'long') return row.question && row.answer;
+      return false;
+    });
+
+    if (!isValid || parsed.length === 0) {
+      alert('Invalid file format. Please check that the file follows the required format and try again.');
+      return; // allows them to try again
     }
+
+    // Proceed if valid
+    quizData = parsed;
     try {
-        localStorage.setItem('quizData', JSON.stringify(quizData));
+      localStorage.setItem('quizData', JSON.stringify(quizData));
     } catch (e) {
-        console.warn('localStorage not available:', e);
+      console.warn('localStorage not available:', e);
     }
+
     document.getElementById('upload-section').classList.add('hidden');
-    quizSection.classList.remove('hidden');
+    currentQuestionIndex = 0;
     showQuestion();
-    };
-    reader.readAsText(file);
+  };
+
+  reader.readAsText(file);
 });
 
-/**
- * Parses CSV text where each line has two columns (question, answer)
- * separated by a comma.
- * @param {string} text CSV content as string.
- * @returns {Array} Array of objects with "question" and "answer" keys.
- */
+
 function parseCSV(text) {
-    const rows = text.split('\n');
-    const data = [];
-    rows.forEach(row => {
-    const trimmedRow = row.trim();
-    if (trimmedRow) {
-        const columns = trimmedRow.split(',');
-        if (columns.length >= 2) {
-        const question = columns[0].trim();
-        const answer = columns[1].trim();
-        data.push({ question, answer });
-        }
+  const rows = text.trim().split('\n');
+  const data = [];
+
+  rows.forEach(row => {
+    const cols = row.split(',').map(col => col.trim());
+    if (quizMode === 'mcq' && cols.length >= 5) {
+      const [question, answer, optionA, optionB, optionC] = cols;
+      data.push({ question, answer, options: [optionA, optionB, optionC] });
+    } else if (quizMode === 'long' && cols.length >= 2) {
+      const [question, answer] = cols;
+      data.push({ question, answer });
     }
-    });
-    return data;
+  });
+
+  return data;
 }
+
 
 function showQuestion() {
-    userAnswerInput.value = '';
-    if (currentQuestionIndex < quizData.length) {
-    const currentItem = quizData[currentQuestionIndex];
-    questionText.textContent = `Question ${currentQuestionIndex + 1}: ${currentItem.question}`;
-    } else {
-    quizSection.classList.add('hidden');
+  if (currentQuestionIndex >= quizData.length) {
+    // Hide both quiz sections
+    document.getElementById('quiz-section-long').classList.add('hidden');
+    document.getElementById('quiz-section-mcq').classList.add('hidden');
     showReview();
-    }
+    return;
+  }
+
+  const currentItem = quizData[currentQuestionIndex];
+
+  if (quizMode === 'mcq') {
+    // Show MCQ section, hide long answer section
+    document.getElementById('quiz-section-mcq').classList.remove('hidden');
+    document.getElementById('quiz-section-long').classList.add('hidden');
+
+    // Set question text
+    document.getElementById('questionTextMcq').textContent = `Question ${currentQuestionIndex + 1}: ${currentItem.question}`;
+
+    // Create options
+    const mcqContainer = document.getElementById('mcqOptions');
+    mcqContainer.innerHTML = '';
+    currentItem.options.forEach(opt => {
+      const label = document.createElement('label');
+      label.innerHTML = `<input type="radio" name="mcq" value="${opt}"> ${opt}`;
+      mcqContainer.appendChild(label);
+      mcqContainer.appendChild(document.createElement('br'));
+    });
+
+  } else if (quizMode === 'long') {
+    // Show long answer section, hide MCQ section
+    document.getElementById('quiz-section-long').classList.remove('hidden');
+    document.getElementById('quiz-section-mcq').classList.add('hidden');
+
+    // Set question text and clear input
+    document.getElementById('questionTextLong').textContent = `Question ${currentQuestionIndex + 1}: ${currentItem.question}`;
+    userAnswerInput.value = '';
+  }
 }
 
-submitAnswerBtn.addEventListener('click', () => {
-    const userResponse = userAnswerInput.value.trim();
-    const currentItem = quizData[currentQuestionIndex];
-    responses[currentQuestionIndex] = { 
-    question: currentItem.question, 
-    userAnswer: userResponse, 
-    correctAnswer: currentItem.answer,
-    assessment: null
-    };
-    currentQuestionIndex++;
-    showQuestion();
+
+submitAnswerMcqBtn.addEventListener('click', () => {
+  const selected = document.querySelector('input[name="mcq"]:checked');
+  if (!selected) {
+    alert('Please select an option before submitting.');
+    return;
+  }
+  const userResponse = selected.value;
+  saveAnswerAndNext(userResponse);
 });
 
-// When a blink is detected, skip the current question
+submitAnswerLongBtn.addEventListener('click', () => {
+  const userResponse = userAnswerInput.value.trim();
+  if (!userResponse) {
+    alert('Please enter an answer before submitting.');
+    return;
+  }
+  saveAnswerAndNext(userResponse);
+});
+
+function saveAnswerAndNext(userResponse) {
+  const currentItem = quizData[currentQuestionIndex];
+  responses[currentQuestionIndex] = {
+    question: currentItem.question,
+    userAnswer: userResponse || '(no answer given)',
+    correctAnswer: currentItem.answer,
+    assessment: null
+  };
+  currentQuestionIndex++;
+  showQuestion();
+}
+
 function skipCurrentQuestion() {
-    if (!quizSection.classList.contains('hidden') && currentQuestionIndex < quizData.length) {
-    // Register the question as skipped
+  if (currentQuestionIndex < quizData.length) {
     const currentItem = quizData[currentQuestionIndex];
-    responses[currentQuestionIndex] = { 
-        question: currentItem.question, 
-        userAnswer: "(skipped)", 
-        correctAnswer: currentItem.answer,
-        assessment: null
+    responses[currentQuestionIndex] = {
+      question: currentItem.question,
+      userAnswer: "(skipped)",
+      correctAnswer: currentItem.answer,
+      assessment: null
     };
     currentQuestionIndex++;
     showQuestion();
-    }
+  }
 }
 
 function showReview() {
-    reviewSection.classList.remove('hidden');
-    reviewContainer.innerHTML = '';
-    responses.forEach((response, index) => {
+  reviewSection.classList.remove('hidden');
+  reviewContainer.innerHTML = '';
+  responses.forEach((response, index) => {
     const container = document.createElement('div');
     container.className = 'question-box';
     container.style.marginBottom = '15px';
@@ -123,7 +196,7 @@ function showReview() {
     qText.textContent = `Question ${index + 1}: ${response.question}`;
 
     const userAnsP = document.createElement('p');
-    userAnsP.innerHTML = `<strong>Your Answer:</strong> ${response.userAnswer || '(no answer given)'}`;
+    userAnsP.innerHTML = `<strong>Your Answer:</strong> ${response.userAnswer}`;
 
     const corrAnsP = document.createElement('p');
     corrAnsP.innerHTML = `<strong>Correct Answer:</strong> ${response.correctAnswer}`;
@@ -133,75 +206,60 @@ function showReview() {
     container.appendChild(corrAnsP);
 
     const radioContainer = document.createElement('div');
-    radioContainer.className = 'radio-container';
-
     const assessText = document.createElement('p');
     assessText.textContent = "Self-assess:";
     radioContainer.appendChild(assessText);
 
-    const passLabel = document.createElement('label');
-    const passInput = document.createElement('input');
-    passInput.type = 'radio';
-    passInput.name = 'assessment-' + index;
-    passInput.value = 'Pass';
-    passLabel.appendChild(passInput);
-    passLabel.appendChild(document.createTextNode(' Pass'));
-
-    const failLabel = document.createElement('label');
-    const failInput = document.createElement('input');
-    failInput.type = 'radio';
-    failInput.name = 'assessment-' + index;
-    failInput.value = 'Fail';
-    failLabel.appendChild(failInput);
-    failLabel.appendChild(document.createTextNode(' Fail'));
-
-    radioContainer.appendChild(passLabel);
-    radioContainer.appendChild(failLabel);
-    container.appendChild(radioContainer);
-
-    reviewContainer.appendChild(container);
+    ['Pass', 'Fail'].forEach(value => {
+      const label = document.createElement('label');
+      const input = document.createElement('input');
+      input.type = 'radio';
+      input.name = `assessment-${index}`;
+      input.value = value;
+      label.appendChild(input);
+      label.append(` ${value}`);
+      radioContainer.appendChild(label);
     });
+
+    container.appendChild(radioContainer);
+    reviewContainer.appendChild(container);
+  });
 }
 
 submitAssessmentsBtn.addEventListener('click', () => {
-    for (let i = 0; i < responses.length; i++) {
-    const radioGroup = document.getElementsByName('assessment-' + i);
-    let assessmentValue = null;
-    for (const radio of radioGroup) {
-        if (radio.checked) {
-        assessmentValue = radio.value;
-        break;
-        }
+  for (let i = 0; i < responses.length; i++) {
+    const radios = document.getElementsByName(`assessment-${i}`);
+    let selected = null;
+    radios.forEach(radio => {
+      if (radio.checked) selected = radio.value;
+    });
+
+    if (!selected) {
+      alert(`Please select Pass or Fail for Question ${i + 1}.`);
+      return;
     }
-    if (!assessmentValue) {
-        alert(`Please select Pass or Fail for Question ${i + 1}.`);
-        return;
-    }
-    responses[i].assessment = assessmentValue;
-    }
-    reviewSection.classList.add('hidden');
-    showResults();
+
+    responses[i].assessment = selected;
+  }
+
+  reviewSection.classList.add('hidden');
+  showResults();
 });
 
 function showResults() {
-    resultsSection.classList.remove('hidden');
-    resultsContainer.innerHTML = '';
+  resultsSection.classList.remove('hidden');
+  resultsContainer.innerHTML = '';
 
-    const totalQuestions = responses.length;
-    let numRight = 0;
-    responses.forEach(response => {
-    if (response.assessment === 'Pass') {
-        numRight++;
-    }
-    });
-    const numWrong = totalQuestions - numRight;
-    const percentRight = totalQuestions > 0 ? Math.round((numRight / totalQuestions) * 100) : 0;
-    resultsContainer.innerHTML = `
-    <p><strong>Total Questions:</strong> ${totalQuestions}</p>
-    <p><strong>Questions Right:</strong> ${numRight}</p>
-    <p><strong>Questions Wrong:</strong> ${numWrong}</p>
-    <p><strong>Percentage Correct:</strong> ${percentRight}%</p>
-    `;
+  const total = responses.length;
+  const correct = responses.filter(r => r.assessment === 'Pass').length;
+  const percent = total > 0 ? Math.round((correct / total) * 100) : 0;
+
+  resultsContainer.innerHTML = `
+    <p><strong>Total Questions:</strong> ${total}</p>
+    <p><strong>Questions Right:</strong> ${correct}</p>
+    <p><strong>Questions Wrong:</strong> ${total - correct}</p>
+    <p><strong>Percentage Correct:</strong> ${percent}%</p>
+  `;
 }
 
 /***************  Eye Tracker / Blink Detection Section ***************/
@@ -223,77 +281,79 @@ const rightIdx = [33, 160, 158, 133, 153, 144];
 
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const computeEAR = (landmarks, idx) => (
-    (dist(landmarks[idx[1]], landmarks[idx[5]]) + dist(landmarks[idx[2]], landmarks[idx[4]])) /
-    (2 * dist(landmarks[idx[0]], landmarks[idx[3]]))
+  (dist(landmarks[idx[1]], landmarks[idx[5]]) + dist(landmarks[idx[2]], landmarks[idx[4]])) /
+  (2 * dist(landmarks[idx[0]], landmarks[idx[3]]))
 );
 
 // Set up MediaPipe FaceMesh.
 const faceMesh = new FaceMesh({
-    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
+  locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`
 });
 faceMesh.setOptions({
-    maxNumFaces: 1,
-    refineLandmarks: true,
-    minDetectionConfidence: 0.5,
-    minTrackingConfidence: 0.5
+  maxNumFaces: 1,
+  refineLandmarks: true,
+  minDetectionConfidence: 0.5,
+  minTrackingConfidence: 0.5
 });
 faceMesh.onResults(results => {
-    if (!results.multiFaceLandmarks.length) {
+  if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
     status.textContent = 'No face detected';
     closedCtr = 0;
     return;
-    }
-    status.textContent = 'Tracking… Blink away!';
-    const landmarks = results.multiFaceLandmarks[0];
-    const earAvg = (computeEAR(landmarks, leftIdx) + computeEAR(landmarks, rightIdx)) / 2;
-    
-    if (earAvg < EAR_THRESHOLD) {
+  }
+  status.textContent = 'Tracking… Blink away!';
+  const landmarks = results.multiFaceLandmarks[0];
+  const earAvg = (computeEAR(landmarks, leftIdx) + computeEAR(landmarks, rightIdx)) / 2;
+
+  if (earAvg < EAR_THRESHOLD) {
     closedCtr++;
-    } else {
-    // If the closed counter meets the required number of frames, trigger blink detection.
+  } else {
     if (closedCtr >= dynamicClosedFrames) {
-        skipCurrentQuestion();
+      skipCurrentQuestion();
     }
     closedCtr = 0;
-    }
-    
-    // Optional drawing onto the canvas (if you ever want to see the video/landmarks).
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#0f0';
-    landmarks.forEach(p => {
+  }
+
+  // Optional drawing onto the canvas.
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#0f0';
+  landmarks.forEach(p => {
     ctx.fillRect(p.x * canvas.width - 1, p.y * canvas.height - 1, 3, 3);
-    });
+  });
 });
 
-// FPS calculation and dynamic blink duration computation.
-let lastFrameTime = performance.now();
-let currentFps = 30;
+// FPS calculation
+let lastTime = performance.now();
+let frameCount = 0;
+function updateFPS() {
+  const now = performance.now();
+  frameCount++;
+  if (now - lastTime >= 1000) {
+    fpsDisplay.textContent = `FPS: ${frameCount}`;
+    frameCount = 0;
+    lastTime = now;
+  }
+  requestAnimationFrame(updateFPS);
+}
+updateFPS();
 
-// Set up the camera helper for MediaPipe.
-const cam = new Camera(video, {
-    onFrame: async () => {
-    const now = performance.now();
-    const delta = now - lastFrameTime;
-    currentFps = 1000 / delta;
-    lastFrameTime = now;
-    fpsDisplay.textContent = `FPS: ${currentFps.toFixed(1)}`;
-    // Compute the number of frames corresponding to 0.1s.
-    dynamicClosedFrames = Math.max(1, Math.floor(currentFps * 0.1));
+// Start webcam and processing.
+async function startCamera() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    video.srcObject = stream;
+    await video.play();
 
-    // Display a warning if FPS drops below 8.
-    if (currentFps < 8) {
-        warningDisplay.textContent = "Warning: Low FPS (<8) – detections may be inaccurate.";
-    } else {
-        warningDisplay.textContent = "";
+    async function onFrame() {
+      await faceMesh.send({ image: video });
+      requestAnimationFrame(onFrame);
     }
-    await faceMesh.send({ image: video });
-    },
-    width: 480,
-    height: 360
-});
-cam.start()
-    .then(() => { status.textContent = 'Camera on -- position your face in view'; })
-    .catch(e => { status.textContent = 'Camera error: ' + e.message; });
+    onFrame();
+  } catch (e) {
+    warningDisplay.textContent = 'Error accessing webcam: ' + e.message;
+  }
+}
+startCamera();
