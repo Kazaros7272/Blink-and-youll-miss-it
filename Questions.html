@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta
       name="author"
-      content="LAMMY - Lshort, Ashort, Mshort, Mshort, Yshort"
+      content="LAMMY - Legendary, Awesome, Mind-blowing, Magnetic, Youthful"
     />
     <title>Blink and you'll miss it!</title>
     <link rel="stylesheet" href="styles.css" />
@@ -83,7 +83,7 @@
           <option value="data5.csv">Computer Science</option>
         </select>
       </div>
-
+      <p></p>
       <button id="uploadBtn">Load Data</button>
     </div>
 
@@ -110,6 +110,12 @@
       </div>
     </div>
 
+    <!-- Auto-Mark (Only applies to MCQs) -->
+    <div id="autoMarkContainer" class="hidden">
+      <button id="autoMarkMcq" class="autoMark-btn">Auto Mark Answer</button>
+    </div>
+
+
     <!-- Review Section -->
     <div id="review-section" class="hidden">
       <h2>Review and Self-Assess Your Answers</h2>
@@ -123,6 +129,13 @@
     <div id="results-section" class="hidden">
       <h2>Your Results</h2>
       <div id="resultsContainer"></div>
+      <p></p>
+      <h2>Export Results</h2>
+      <button id="exportCsvBtn" class="exportCsv-btn">Export Results as CSV</button>
+      <button id="exportPdfBtn" class="exportPdf-btn">Export Results as PDF</button>
+      <p></p>
+      <h2>Try Again?</h2>
+      <button id="restartQuizBtn" class="restartQuiz-btn">Restart Quiz</button>
     </div>
 
     <!-- Eye tracking section -->
@@ -138,9 +151,18 @@
       </div>
     </div>
 
+    <!-- PapaParse Library for parsing CSV file-->
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
     <!-- MediaPipe libraries for face tracking -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
-    <script src="MCQ.js"></script>
+
+    <!-- Main js file -->
+    <script src="FroggyCode.js"></script>
+
+    <!-- For exporting results -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
   </body>
 </html>
