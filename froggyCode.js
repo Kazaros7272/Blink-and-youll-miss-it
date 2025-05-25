@@ -17,6 +17,7 @@ const resultsContainer = document.getElementById('resultsContainer');
 
 let quizMode = ''; // 'long' or 'mcq'
 
+
 // Elements for long answer ready-made file selection
 const uploadOptionContainer = document.getElementById('uploadOptionContainer');
 const ownFileContainer = document.getElementById('ownFileContainer');
@@ -148,11 +149,11 @@ uploadBtn.addEventListener('click', () => {
   }
 });
 
+
 function parseCSV(text) {
-  const rows = text.trim().split('\n');
+  const parsed = Papa.parse(text.trim(), { skipEmptyLines: true }).data;
   const data = [];
-  rows.forEach(row => {
-    const cols = row.split(',').map(col => col.trim());
+  parsed.forEach(cols => {
     if (quizMode === 'mcq' && cols.length >= 5) {
       const [question, answer, optionA, optionB, optionC] = cols;
       data.push({ question, answer, options: [optionA, optionB, optionC] });
@@ -164,6 +165,7 @@ function parseCSV(text) {
   return data;
 }
 
+
 // --- Quiz Logic ---
 
 function showQuestion() {
@@ -174,7 +176,10 @@ function showQuestion() {
     showReview();
     return;
   }
+
   const currentItem = quizData[currentQuestionIndex];
+  const totalQuestions = quizData.length;
+
   if (quizMode === 'mcq') {
     // Show MCQ section and hide long answer section.
     document.getElementById('quiz-section-mcq').classList.remove('hidden');
@@ -182,7 +187,7 @@ function showQuestion() {
     // Set question text.
     document.getElementById('questionTextMcq').textContent = `Question ${
       currentQuestionIndex + 1
-    }: ${currentItem.question}`;
+    } of ${totalQuestions} : ${currentItem.question}`;
     // Create options.
     const mcqContainer = document.getElementById('mcqOptions');
     mcqContainer.innerHTML = '';
@@ -199,7 +204,7 @@ function showQuestion() {
     // Set question text and clear input.
     document.getElementById('questionTextLong').textContent = `Question ${
       currentQuestionIndex + 1
-    }: ${currentItem.question}`;
+    } of ${totalQuestions} : ${currentItem.question}`;
     userAnswerInput.value = '';
   }
 }
@@ -223,17 +228,24 @@ submitAnswerLongBtn.addEventListener('click', () => {
   saveAnswerAndNext(userResponse);
 });
 
+
 function saveAnswerAndNext(userResponse) {
   const currentItem = quizData[currentQuestionIndex];
+
+  // auto marks current MCQ
+  const isCorrect = quizMode === 'mcq' && userResponse.trim().toLowerCase() === currentItem.answer.trim().toLowerCase();
+
   responses[currentQuestionIndex] = {
     question: currentItem.question,
     userAnswer: userResponse || '(no answer given)',
     correctAnswer: currentItem.answer,
-    assessment: null
+    assessment: quizMode === 'mcq' ? (isCorrect ? 'Pass' : 'Fail') : null
   };
+
   currentQuestionIndex++;
   showQuestion();
 }
+
 
 function skipCurrentQuestion() {
   if (currentQuestionIndex < quizData.length) {
@@ -252,6 +264,16 @@ function skipCurrentQuestion() {
 function showReview() {
   reviewSection.classList.remove('hidden');
   reviewContainer.innerHTML = '';
+
+   // Show/hide Auto-Mark button only if quizMode is 'mcq'
+  const autoMarkContainer = document.getElementById('autoMarkContainer');
+  if (quizMode === 'mcq') {
+    autoMarkContainer.classList.remove('hidden');
+  } else {
+    autoMarkContainer.classList.add('hidden');
+  }
+
+
   responses.forEach((response, index) => {
     const container = document.createElement('div');
     container.className = 'question-box';
@@ -276,21 +298,52 @@ function showReview() {
     assessText.textContent = 'Self-assess:';
     radioContainer.appendChild(assessText);
 
+
     ['Pass', 'Fail'].forEach((value) => {
-      const label = document.createElement('label');
-      const input = document.createElement('input');
-      input.type = 'radio';
-      input.name = `assessment-${index}`;
-      input.value = value;
-      label.appendChild(input);
-      label.append(` ${value}`);
-      radioContainer.appendChild(label);
+    const id = `assessment-${index}-${value}`;
+    
+    const input = document.createElement('input');
+    input.type = 'radio';
+    input.name = `assessment-${index}`;
+    input.id = id;
+    input.value = value;
+
+    const label = document.createElement('label');
+    label.setAttribute('for', id);
+    label.style.marginRight = '10px'; // Optional spacing
+    label.textContent = value;
+
+    radioContainer.appendChild(input);
+    radioContainer.appendChild(label);
     });
+
 
     container.appendChild(radioContainer);
     reviewContainer.appendChild(container);
   });
 }
+
+// button for auto marking MCQs
+document.getElementById('autoMarkMcq').addEventListener('click', () => {
+  if (quizMode !== 'mcq') return;
+
+  // Auto-mark each MCQ response:
+  responses.forEach((response, idx) => {
+    // Mark Pass if user's answer matches the correct answer
+    const userAns = response.userAnswer
+    const correctAns = response.correctAnswer
+    response.assessment = userAns === correctAns ? 'Pass' : 'Fail';
+
+  });
+
+  // Hide the auto-mark button after marking
+  document.getElementById('autoMarkContainer').classList.add('hidden');
+
+  // Hide review section and show results
+  reviewSection.classList.add('hidden');
+  showResults();
+});
+
 
 submitAssessmentsBtn.addEventListener('click', () => {
   for (let i = 0; i < responses.length; i++) {
@@ -322,6 +375,168 @@ function showResults() {
     <p><strong>Percentage Correct:</strong> ${percent}%</p>
   `;
 }
+
+
+/* Restart Quiz - redo the same quiz */
+
+document.getElementById('restartQuizBtn').addEventListener('click', () => {
+  // Reset quiz state variables
+  currentQuestionIndex = 0;
+  responses.length = 0;   // clear previous responses
+
+  // Hide results and review sections
+  resultsSection.classList.add('hidden');
+  reviewSection.classList.add('hidden');
+
+  // Hide auto-mark button container if shown
+  document.getElementById('autoMarkContainer').classList.add('hidden');
+
+  // Don't clear quizData to allow the same quiz to be retaken
+  // quizData = [];
+
+  // Clear answer input (for long answer)
+  userAnswerInput.value = '';
+
+  // Show quiz section directly based on current mode
+  if (quizMode === 'mcq') {
+    document.getElementById('quiz-section-mcq').classList.remove('hidden');
+    document.getElementById('quiz-section-long').classList.add('hidden');
+  } else if (quizMode === 'long') {
+    document.getElementById('quiz-section-long').classList.remove('hidden');
+    document.getElementById('quiz-section-mcq').classList.add('hidden');
+  }
+
+  // Show the first question of the quiz again
+  showQuestion();
+});
+
+
+/* Export results */
+
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+  exportResultsToCSV(responses);
+});
+
+document.getElementById('exportPdfBtn').addEventListener('click', () => {
+  exportResultsToPDF(responses);
+});
+
+function exportResultsToCSV(responses) {
+  if (!responses.length) {
+    alert("No responses to export!");
+    return;
+  }
+
+  const headers = ['Question', 'Your Answer', 'Correct Answer', 'Correct'];
+  
+  // Map each response to a CSV row
+  const rows = responses.map(r => [
+    `"${r.question.replace(/"/g, '""')}"`,
+    `"${r.userAnswer.replace(/"/g, '""')}"`,
+    `"${r.correctAnswer.replace(/"/g, '""')}"`,
+    r.assessment === 'Pass' ? 'Yes' : 'No'
+  ]);
+
+  // Calculate summary totals
+  const totalQuestions = responses.length;
+  const totalCorrect = responses.filter(r => r.assessment === 'Pass').length;
+  const scorePercent = totalQuestions ? ((totalCorrect / totalQuestions) * 100).toFixed(2) : 0;
+
+  // Build summary rows for CSV
+  const summaryRows = [
+    [],
+    ['Total Questions', totalQuestions],
+    ['Total Correct', totalCorrect],
+    ['Score Percentage (%)', scorePercent]
+  ];
+
+  // Join everything into CSV string
+  const csvContent =
+    headers.join(',') + '\n' +
+    rows.map(r => r.join(',')).join('\n') + '\n' +
+    summaryRows.map(r => r.join(',')).join('\n');
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = 'quiz_results.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+
+function exportResultsToPDF(responses) {
+  if (!responses.length) {
+    alert("No responses to export!");
+    return;
+  }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+
+  const marginLeft = 10;
+  let y = 10;
+  const lineHeight = 8;
+  const pageHeight = doc.internal.pageSize.height;
+
+  doc.setFontSize(16);
+  doc.text('Quiz Results', marginLeft, y);
+  y += 12;
+
+  doc.setFontSize(12);
+
+  responses.forEach((r, index) => {
+    const questionText = `${index + 1}. Question: ${r.question}`;
+    const questionLines = doc.splitTextToSize(questionText, 180);
+
+    if (y + questionLines.length * lineHeight > pageHeight - 20) {
+      doc.addPage();
+      y = 10;
+    }
+    doc.text(questionLines, marginLeft, y);
+    y += questionLines.length * lineHeight;
+
+    if (y + 4 * lineHeight > pageHeight - 20) {
+      doc.addPage();
+      y = 10;
+    }
+
+    doc.text(`Your Answer: ${r.userAnswer}`, marginLeft + 5, y);
+    y += lineHeight;
+    doc.text(`Correct Answer: ${r.correctAnswer}`, marginLeft + 5, y);
+    y += lineHeight;
+    doc.text(`Correct: ${r.assessment === 'Pass' ? 'Yes' : 'No'}`, marginLeft + 5, y);
+    y += lineHeight + 5;
+  });
+
+  // Summary totals
+  const totalQuestions = responses.length;
+  const totalCorrect = responses.filter(r => r.assessment === 'Pass').length;
+  const scorePercent = totalQuestions ? ((totalCorrect / totalQuestions) * 100).toFixed(2) : 0;
+
+  if (y + 4 * lineHeight > pageHeight - 20) {
+    doc.addPage();
+    y = 10;
+  }
+
+  doc.setFontSize(14);
+  doc.text('Summary', marginLeft, y);
+  y += lineHeight + 5;
+
+  doc.setFontSize(12);
+  doc.text(`Total Questions: ${totalQuestions}`, marginLeft, y);
+  y += lineHeight;
+  doc.text(`Total Correct: ${totalCorrect}`, marginLeft, y);
+  y += lineHeight;
+  doc.text(`Score Percentage: ${scorePercent}%`, marginLeft, y);
+
+  doc.save('quiz_results.pdf');
+}
+
 
 /*************** Eye Tracker / Blink Detection Section ***************/
 const video = document.getElementById('video');
