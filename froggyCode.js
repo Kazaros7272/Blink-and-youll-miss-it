@@ -386,34 +386,32 @@ faceMesh.onResults((results) => {
   });
 });
 
-// FPS calculation
-let lastTime = performance.now();
-let frameCount = 0;
-function updateFPS() {
-  const now = performance.now();
-  frameCount++;
-  if (now - lastTime >= 1000) {
-    fpsDisplay.textContent = `FPS: ${frameCount}`;
-    frameCount = 0;
-    lastTime = now;
-  }
-  requestAnimationFrame(updateFPS);
-}
-updateFPS();
+// FPS calculation and dynamic blink duration computation.
+let lastFrameTime = performance.now();
+let currentFps = 30;
 
-// Start webcam and processing.
-async function startCamera() {
-  try {
-    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-    video.srcObject = stream;
-    await video.play();
-    async function onFrame() {
-      await faceMesh.send({ image: video });
-      requestAnimationFrame(onFrame);
+// Set up the camera helper for MediaPipe.
+const cam = new Camera(video, {
+    onFrame: async () => {
+    const now = performance.now();
+    const delta = now - lastFrameTime;
+    currentFps = 1000 / delta;
+    lastFrameTime = now;
+    fpsDisplay.textContent = `FPS: ${currentFps.toFixed(1)}`;
+    // Compute the number of frames corresponding to 0.1s.
+    dynamicClosedFrames = Math.max(1, Math.floor(currentFps * 0.1));
+
+    // Display a warning if FPS drops below 8.
+    if (currentFps < 8) {
+        warningDisplay.textContent = "Warning: Low FPS (<8) – detections may be inaccurate.";
+    } else {
+        warningDisplay.textContent = "";
     }
-    onFrame();
-  } catch (e) {
-    warningDisplay.textContent = 'Error accessing webcam: ' + e.message;
-  }
-}
-startCamera();
+    await faceMesh.send({ image: video });
+    },
+    width: 480,
+    height: 360
+});
+cam.start()
+    .then(() => { status.textContent = 'Camera on -- position your face in view'; })
+    .catch(e => { status.textContent = 'Camera error: ' + e.message; });
