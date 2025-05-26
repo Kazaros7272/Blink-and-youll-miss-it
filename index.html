@@ -35,6 +35,29 @@
     #uploadOptionContainer label {
       margin-right: 15px;
     }
+
+    .blink-registered {
+      border: 4px solid #00a676;
+      box-shadow: 0 0 10px #00a676;
+      transition: border 0.3s ease;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 500px; /* Set your desired width */
+      height: 400px; /* Set your desired height */
+      box-sizing: border-box;
+    }
+
+    #video {
+      /*Mirror code starts*/
+    transform: rotateY(180deg);
+    -webkit-transform:rotateY(180deg); /* Safari and Chrome */
+    -moz-transform:rotateY(180deg); /* Firefox */
+    /*Mirror code ends*/
+    }
   </style>
 </head>
 
@@ -127,8 +150,8 @@
 
   <!-- Eye tracking section -->
   <div class="eye-tracking-container">
-    <div>
-      <video id="video" autoplay playsinline muted></video>
+    <div class="container">
+      <video id="video" autoplay playsinline muted style="display: block; margin: 50 auto;"></video>
       <canvas id="canvas" style="display: none;"></canvas>
     </div>
     <div class="eye-tracking-status">
@@ -146,7 +169,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
 
   <!-- Main js file -->
-  <script src="froggyCode.js"></script>
+  <script src="FroggyCode.js"></script>
 
   <!-- For exporting results -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
