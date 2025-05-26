@@ -492,6 +492,14 @@ function exportResultsToPDF(responses) {
 
 /*************** Eye Tracker / Blink Detection Section ***************/
 const video = document.getElementById('video');
+
+function flashBlinkBorder() {
+  video.classList.add('blink-registered');
+  setTimeout(() => {
+    video.classList.remove('blink-registered');
+  }, 300);
+}
+
 const canvas = document.getElementById('canvas');
 const status = document.getElementById('status');
 const fpsDisplay = document.getElementById('fps');
@@ -534,6 +542,7 @@ faceMesh.onResults((results) => {
     closedCtr++;
   } else {
     if (closedCtr >= dynamicClosedFrames) {
+      flashBlinkBorder();
       skipCurrentQuestion();
     }
     closedCtr = 0;
