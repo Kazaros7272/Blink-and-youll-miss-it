@@ -33,7 +33,7 @@ Kackathon Kings is a fun and simple web application that gamifies answering Long
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/Kazaros7272/Kackathon-Kings.git
+   git clone https://github.com/Kazaros7272/Blink-and-youll-miss-it.git
    cd Kackathon-Kings
    ```
 2. **Open the main HTML file in your browser** (no build or server required).
