@@ -237,32 +237,41 @@ function saveAnswerAndNext(userResponse) {
   showQuestion();
 }
 
-// Called via blink detection.
+// Global variable to guard against multiple rapid skips.
+let skipLock = false;
+
 function skipCurrentQuestion() {
-  if (currentQuestionIndex < quizData.length) {
-    const currentItem = quizData[currentQuestionIndex];
-    let answerToSubmit = '(skipped)';
+  // Prevent multiple invocations if a skip is already in progress.
+  if (currentQuestionIndex >= quizData.length || skipLock) return;
+  skipLock = true;
 
-    // For long answer mode, submit the partially typed answer (if any)
-    if (quizMode === 'long') {
-      const partialAnswer = userAnswerInput.value.trim();
-      if (partialAnswer !== '') {
-        answerToSubmit = partialAnswer;
-      }
+  const currentItem = quizData[currentQuestionIndex];
+  let answerToSubmit = "(skipped)";
+
+  if (quizMode === 'long') {
+    // Capture the user’s partially typed answer immediately.
+    const partialAnswer = userAnswerInput.value;
+    if (partialAnswer.trim() !== "") {
+      answerToSubmit = partialAnswer;
     }
-
-    responses[currentQuestionIndex] = {
-      question: currentItem.question,
-      userAnswer: answerToSubmit,
-      correctAnswer: currentItem.answer,
-      assessment: null
-    };
-
-    // Increase the blink counter when a question is skipped via blink.
-    blinkCount++;
-    currentQuestionIndex++;
-    showQuestion();
   }
+
+  responses[currentQuestionIndex] = {
+    question: currentItem.question,
+    userAnswer: answerToSubmit,
+    correctAnswer: currentItem.answer,
+    assessment: null
+  };
+
+  // Increase the blink counter when a question is skipped via blink.
+  blinkCount++;
+  currentQuestionIndex++;
+  showQuestion();
+
+  // Release the lock after 1 second to avoid multiple rapid skips.
+  setTimeout(() => {
+    skipLock = false;
+  }, 1000);
 }
 
 function showReview() {
