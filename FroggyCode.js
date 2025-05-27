@@ -187,11 +187,20 @@ function showQuestion() {
     const mcqContainer = document.getElementById('mcqOptions');
     mcqContainer.innerHTML = '';
     currentItem.options.forEach(opt => {
-      const label = document.createElement('label');
-      label.innerHTML = `<input type="radio" name="mcq" value="${opt}"> ${opt}`;
-      mcqContainer.appendChild(label);
-      mcqContainer.appendChild(document.createElement('br'));
+      const optionBox = document.createElement('div');
+      optionBox.className = 'mcq-option';
+      optionBox.textContent = opt;
+      optionBox.dataset.value = opt;
+
+      optionBox.addEventListener('click', () => {
+        // Deselect all
+        document.querySelectorAll('.mcq-option').forEach(el => el.classList.remove('selected'));
+        optionBox.classList.add('selected');
+      });
+
+      mcqContainer.appendChild(optionBox);
     });
+
 
     document.addEventListener('keydown', function mcqEnterListener(e) {
       if (quizMode === 'mcq' && e.key === 'Enter') {
@@ -213,12 +222,12 @@ function showQuestion() {
 }
 
 submitAnswerMcqBtn.addEventListener('click', () => {
-  const selected = document.querySelector('input[name="mcq"]:checked');
+  const selected = document.querySelector('.mcq-option.selected');
   if (!selected) {
     alert('Please select an option before submitting.');
     return;
   }
-  const userResponse = selected.value;
+  const userResponse = selected.dataset.value;
   saveAnswerAndNext(userResponse);
 });
 
