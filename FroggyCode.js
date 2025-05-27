@@ -192,6 +192,17 @@ function showQuestion() {
       mcqContainer.appendChild(label);
       mcqContainer.appendChild(document.createElement('br'));
     });
+
+    document.addEventListener('keydown', function mcqEnterListener(e) {
+      if (quizMode === 'mcq' && e.key === 'Enter') {
+        const selected = document.querySelector('input[name="mcq"]:checked');
+        if (selected) {
+          e.preventDefault();
+          submitAnswerMcqBtn.click();
+        }
+      }
+    });
+
   } else if (quizMode === 'long') {
     document.getElementById('quiz-section-long').classList.remove('hidden');
     document.getElementById('quiz-section-mcq').classList.add('hidden');
@@ -218,6 +229,13 @@ submitAnswerLongBtn.addEventListener('click', () => {
     return;
   }
   saveAnswerAndNext(userResponse);
+});
+
+userAnswerInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault(); // Prevent form submit or newlines
+    submitAnswerLongBtn.click(); // Simulates button click
+  }
 });
 
 function saveAnswerAndNext(userResponse) {
