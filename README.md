@@ -34,7 +34,7 @@ Blink and you'll miss it is a fun and simple web application that gamifies answe
 1. **Clone the repository**:
    ```bash
    git clone https://github.com/Kazaros7272/Blink-and-youll-miss-it.git
-   cd Kackathon-Kings
+   cd Blink-and-youll-miss-it
    ```
 2. **Open the main HTML file in your browser** (no build or server required).
 3. **Allow webcam access** for blink detection.
