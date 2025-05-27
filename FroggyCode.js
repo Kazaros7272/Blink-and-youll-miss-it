@@ -241,9 +241,19 @@ function saveAnswerAndNext(userResponse) {
 function skipCurrentQuestion() {
   if (currentQuestionIndex < quizData.length) {
     const currentItem = quizData[currentQuestionIndex];
+    let answerToSubmit = '(skipped)';
+
+    // For long answer mode, submit the partially typed answer (if any)
+    if (quizMode === 'long') {
+      const partialAnswer = userAnswerInput.value.trim();
+      if (partialAnswer !== '') {
+        answerToSubmit = partialAnswer;
+      }
+    }
+
     responses[currentQuestionIndex] = {
       question: currentItem.question,
-      userAnswer: '(skipped)',
+      userAnswer: answerToSubmit,
       correctAnswer: currentItem.answer,
       assessment: null
     };
