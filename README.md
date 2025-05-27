@@ -31,14 +31,12 @@ Blink and you'll miss it is a fun and simple web application that gamifies answe
 
 ## Setup & Usage
 
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/Kazaros7272/Blink-and-youll-miss-it.git
-   cd Blink-and-youll-miss-it
-   ```
-2. **Open the main HTML file in your browser** (no build or server required).
-3. **Allow webcam access** for blink detection.
-4. **Follow on-screen instructions** to select question type, upload questions or use a preset, and complete the quiz.
+To use the application, simply visit:  
+**[https://kazaros7272.github.io/Blink-and-youll-miss-it/](https://kazaros7272.github.io/Blink-and-youll-miss-it/)**
+
+1. **Open the link above in your browser** (no installation, build, or server required).
+2. **Allow webcam access** for blink detection.
+3. **Follow on-screen instructions** to select question type, upload questions or use a preset, and complete the quiz.
 
 ## Limitations & Notes
 
