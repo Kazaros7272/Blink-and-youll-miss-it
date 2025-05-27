@@ -2,9 +2,8 @@
 let quizData = [];
 let currentQuestionIndex = 0;
 const responses = [];
-
-let blinkCount = 0;        // Count the number of blinks (skipped questions)
-let quizStartTime = null;  // Record the timestamp when the first question is shown
+let blinkCount = 0; // Count the number of blinks (skipped questions)
+let quizStartTime = null; // Record the timestamp when the first question is shown
 
 // DOM Elements
 const uploadBtn = document.getElementById('uploadBtn');
@@ -27,14 +26,13 @@ let quizMode = ''; // 'long' or 'mcq'
 
 // --- Mode Selection ---
 
-// For MCQ mode, show file source options and update ready-made file list.
 document.getElementById('mcqModeBtn').addEventListener('click', () => {
   quizMode = 'mcq';
   document.getElementById('mode-selection').classList.add('hidden');
   document.getElementById('upload-section').classList.remove('hidden');
   document.getElementById('formatInstructions').innerHTML =
     "<strong>MCQ Format:</strong> Question, Answer, Option A, Option B, Option C";
-  
+
   uploadOptionContainer.classList.remove('hidden');
   ownFileContainer.classList.remove('hidden');
   readyMadeContainer.classList.add('hidden');
@@ -66,6 +64,23 @@ document.getElementById('longAnswerModeBtn').addEventListener('click', () => {
   uploadOptionContainer.classList.remove('hidden');
   ownFileContainer.classList.remove('hidden');
   readyMadeContainer.classList.add('hidden');
+  
+  // Update ready-made file options with the Long Answer question packs.
+  const readyMadeSelect = document.getElementById('readyMadeFileSelect');
+  readyMadeSelect.innerHTML = '';
+  const longAnswerQuestionPacks = [
+    { value: "data1.csv", text: "Geography" },
+    { value: "data2.csv", text: "Math" },
+    { value: "data3.csv", text: "Greek Mythology" },
+    { value: "data4.csv", text: "Blinking" },
+    { value: "data5.csv", text: "Computer Science" }
+  ];
+  longAnswerQuestionPacks.forEach(pack => {
+    const option = document.createElement("option");
+    option.value = pack.value;
+    option.textContent = pack.text;
+    readyMadeSelect.appendChild(option);
+  });
 });
 
 // Toggle between "Upload your own file" and "Choose a ready-made file"
@@ -80,7 +95,6 @@ document.getElementById('readyMade').addEventListener('change', () => {
 
 // --- CSV Load and Parsing ---
 
-// Process CSV text independent of how it was loaded.
 function processCSV(text) {
   const parsed = parseCSV(text);
   const isValid = parsed.every(row => {
@@ -91,9 +105,7 @@ function processCSV(text) {
     return false;
   });
   if (!isValid || parsed.length === 0) {
-    alert(
-      'Invalid file format. Please check that the file follows the required format and try again.'
-    );
+    alert('Invalid file format. Please check that the file follows the required format and try again.');
     return;
   }
   quizData = parsed;
@@ -104,8 +116,7 @@ function processCSV(text) {
   }
   document.getElementById('upload-section').classList.add('hidden');
   currentQuestionIndex = 0;
-  
-  // Removed setting quizStartTime here so that timing starts when the first question is shown.
+  // Start quiz timing when first question is shown.
   showQuestion();
 }
 
@@ -147,7 +158,7 @@ uploadBtn.addEventListener('click', () => {
 });
 
 document.getElementById('exitQuizBtn').addEventListener('click', () => {
-  // Option 1: Mark unanswered questions as skipped
+  // Mark unanswered questions as skipped
   for (let i = currentQuestionIndex; i < quizData.length; i++) {
     const q = quizData[i];
     responses[i] = {
@@ -157,11 +168,9 @@ document.getElementById('exitQuizBtn').addEventListener('click', () => {
       assessment: quizMode === 'mcq' ? 'Fail' : null
     };
   }
-
   currentQuestionIndex = quizData.length; // Mark quiz as done
   showReview(); // Or directly showResults() if you want to skip review
 });
-
 
 function parseCSV(text) {
   const parsed = Papa.parse(text.trim(), { skipEmptyLines: true }).data;
@@ -185,7 +194,7 @@ function showQuestion() {
   if (currentQuestionIndex === 0) {
     quizStartTime = Date.now();
   }
-  
+
   if (currentQuestionIndex >= quizData.length) {
     document.getElementById('quiz-section-long').classList.add('hidden');
     document.getElementById('quiz-section-mcq').classList.add('hidden');
@@ -210,25 +219,22 @@ function showQuestion() {
       optionBox.dataset.value = opt;
 
       optionBox.addEventListener('click', () => {
-        // Deselect all
+        // Deselect all options.
         document.querySelectorAll('.mcq-option').forEach(el => el.classList.remove('selected'));
         optionBox.classList.add('selected');
       });
-
       mcqContainer.appendChild(optionBox);
     });
 
-
     document.addEventListener('keydown', function mcqEnterListener(e) {
       if (quizMode === 'mcq' && e.key === 'Enter') {
-        const selected = document.querySelector('input[name="mcq"]:checked');
+        const selected = document.querySelector('.mcq-option.selected');
         if (selected) {
           e.preventDefault();
           submitAnswerMcqBtn.click();
         }
       }
     });
-
   } else if (quizMode === 'long') {
     document.getElementById('quiz-section-long').classList.remove('hidden');
     document.getElementById('quiz-section-mcq').classList.add('hidden');
@@ -238,7 +244,6 @@ function showQuestion() {
   }
 
   document.getElementById('exitQuizBtn').classList.remove('hidden');
-
 }
 
 submitAnswerMcqBtn.addEventListener('click', () => {
@@ -378,7 +383,6 @@ function showReview() {
   });
 
   document.getElementById('exitQuizBtn').classList.add('hidden');
-
 }
 
 document.getElementById('autoMarkMcq').addEventListener('click', () => {
@@ -423,14 +427,13 @@ function showResults() {
   const blinksPerMinute = quizDurationMinutes > 0 ? (blinkCount / quizDurationMinutes).toFixed(2) : 0;
 
   resultsContainer.innerHTML = `<p><strong>Total Questions:</strong> ${total}</p>
-<p><strong>Questions Right:</strong> ${correct}</p>
-<p><strong>Questions Wrong:</strong> ${total - correct}</p>
-<p><strong>Percentage Correct:</strong> ${percent}%</p>
-<p><strong>Total Blinks:</strong> ${blinkCount}</p>
-<p><strong>Blinks Per Minute:</strong> ${blinksPerMinute}</p>`;
+  <p><strong>Questions Right:</strong> ${correct}</p>
+  <p><strong>Questions Wrong:</strong> ${total - correct}</p>
+  <p><strong>Percentage Correct:</strong> ${percent}%</p>
+  <p><strong>Total Blinks:</strong> ${blinkCount}</p>
+  <p><strong>Blinks Per Minute:</strong> ${blinksPerMinute}</p>`;
 
   document.getElementById('exitQuizBtn').classList.add('hidden');
-
 }
 
 // Restart Quiz - allow a retake of the same quiz.
@@ -441,11 +444,11 @@ document.getElementById('restartQuizBtn').addEventListener('click', () => {
   reviewSection.classList.add('hidden');
   document.getElementById('autoMarkContainer').classList.add('hidden');
   userAnswerInput.value = '';
-  
+
   // Reset the blink count and the quiz start time.
   blinkCount = 0;
   quizStartTime = null;
-  
+
   if (quizMode === 'mcq') {
     document.getElementById('quiz-section-mcq').classList.remove('hidden');
     document.getElementById('quiz-section-long').classList.add('hidden');
@@ -608,7 +611,7 @@ const rightIdx = [33, 160, 158, 133, 153, 144];
 const dist = (a, b) => Math.hypot(a.x - b.x, a.y - b.y);
 const computeEAR = (landmarks, idx) =>
   (dist(landmarks[idx[1]], landmarks[idx[5]]) +
-    dist(landmarks[idx[2]], landmarks[idx[4]])) /
+   dist(landmarks[idx[2]], landmarks[idx[4]])) /
   (2 * dist(landmarks[idx[0]], landmarks[idx[3]]));
 
 const faceMesh = new FaceMesh({
