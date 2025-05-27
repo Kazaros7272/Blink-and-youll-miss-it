@@ -5,7 +5,7 @@ Kackathon Kings is a fun and simple web application that gamifies answering Long
 ## Features
 
 - **Question Type Selection**: Choose between Long Answer or MCQ question modes.
-- **Flexible Input**: Upload your own questions or use a preset provided by the app.
+- **Flexible Input**: Upload your own questions or use a preset provided by the site.
 - **One-at-a-Time Display**: Questions are presented individually for better focus.
 - **Blink Detection**: Uses MediaPipe to detect blinks. Blinking during a question skips it automatically.
 - **Self Assessment**: After the quiz, assess your answers manually. MCQs can also be auto-graded.
