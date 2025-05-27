@@ -430,6 +430,27 @@ document.getElementById('restartQuizBtn').addEventListener('click', () => {
   showQuestion();
 });
 
+document.getElementById('backToStartBtn').addEventListener('click', () => {
+  // Hide all sections
+  document.getElementById('results-section').classList.add('hidden');
+  document.getElementById('review-section').classList.add('hidden');
+  document.getElementById('quiz-section-long').classList.add('hidden');
+  document.getElementById('quiz-section-mcq').classList.add('hidden');
+  document.getElementById('autoMarkContainer').classList.add('hidden');
+
+  // Reset UI and internal state
+  quizMode = '';
+  quizData = [];
+  responses.length = 0;
+  currentQuestionIndex = 0;
+  blinkCount = 0;
+  quizStartTime = null;
+  userAnswerInput.value = '';
+
+  // Show start page
+  document.getElementById('mode-selection').classList.remove('hidden');
+});
+
 /* Export results */
 document.getElementById('exportCsvBtn').addEventListener('click', () => {
   exportResultsToCSV(responses);
