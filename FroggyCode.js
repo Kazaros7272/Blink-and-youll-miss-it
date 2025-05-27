@@ -146,6 +146,23 @@ uploadBtn.addEventListener('click', () => {
   }
 });
 
+document.getElementById('exitQuizBtn').addEventListener('click', () => {
+  // Option 1: Mark unanswered questions as skipped
+  for (let i = currentQuestionIndex; i < quizData.length; i++) {
+    const q = quizData[i];
+    responses[i] = {
+      question: q.question,
+      userAnswer: '(skipped)',
+      correctAnswer: q.answer,
+      assessment: quizMode === 'mcq' ? 'Fail' : null
+    };
+  }
+
+  currentQuestionIndex = quizData.length; // Mark quiz as done
+  showReview(); // Or directly showResults() if you want to skip review
+});
+
+
 function parseCSV(text) {
   const parsed = Papa.parse(text.trim(), { skipEmptyLines: true }).data;
   const data = [];
@@ -219,6 +236,9 @@ function showQuestion() {
       `Question ${currentQuestionIndex + 1} of ${totalQuestions} : ${currentItem.question}`;
     userAnswerInput.value = '';
   }
+
+  document.getElementById('exitQuizBtn').classList.remove('hidden');
+
 }
 
 submitAnswerMcqBtn.addEventListener('click', () => {
@@ -356,6 +376,9 @@ function showReview() {
     container.appendChild(radioContainer);
     reviewContainer.appendChild(container);
   });
+
+  document.getElementById('exitQuizBtn').classList.add('hidden');
+
 }
 
 document.getElementById('autoMarkMcq').addEventListener('click', () => {
@@ -405,6 +428,9 @@ function showResults() {
 <p><strong>Percentage Correct:</strong> ${percent}%</p>
 <p><strong>Total Blinks:</strong> ${blinkCount}</p>
 <p><strong>Blinks Per Minute:</strong> ${blinksPerMinute}</p>`;
+
+  document.getElementById('exitQuizBtn').classList.add('hidden');
+
 }
 
 // Restart Quiz - allow a retake of the same quiz.
