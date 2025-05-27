@@ -1,4 +1,4 @@
-# Kackathon Kings
+# Blink and you'll miss it
 
 Kackathon Kings is a fun and simple web application that gamifies answering Long Answer and Multiple Choice Questions (MCQs) by introducing a unique challenge: you must answer each question without blinking! If you blink, the question is skipped, making the quiz experience more engaging and challenging.
 
