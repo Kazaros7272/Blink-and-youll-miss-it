@@ -732,7 +732,7 @@ faceMesh.onResults((results) => {
 });
 
 // Global variables for FPS averaging:
-let lastFrameTime = performance.now();
+//let lastFrameTime = performance.now();
 let fpsSamples = []; // Array to hold FPS samples {time, fps}
 
 // inside your Camera onFrame callback:
