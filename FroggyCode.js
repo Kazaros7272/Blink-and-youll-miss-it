@@ -296,6 +296,7 @@ function saveAnswerAndNext(userResponse) {
 let skipLock = false;
 
 function skipCurrentQuestion() {
+
   // Prevent multiple invocations if a skip is already in progress.
   if (currentQuestionIndex >= quizData.length || skipLock) return;
   skipLock = true;
@@ -310,6 +311,13 @@ function skipCurrentQuestion() {
       answerToSubmit = partialAnswer;
     }
   }
+  else if (quizMode === 'mcq') {
+    // Try to find the selected MCQ option
+    const selected = document.querySelector('.mcq-option.selected');
+    if (selected) {
+      answerToSubmit = selected.dataset.value;
+  }
+}
 
   responses[currentQuestionIndex] = {
     question: currentItem.question,
@@ -436,7 +444,39 @@ function showResults() {
   <p><strong>Total Blinks:</strong> ${blinkCount}</p>
   <p><strong>Blinks Per Minute:</strong> ${blinksPerMinute}</p>`;
 
+  // firework effects for high scorers
+  if (percent >= 80) {
+    launchFireworks();
+  }
+
   document.getElementById('exitQuizBtn').classList.add('hidden');
+}
+
+// fire work effects
+function launchFireworks() {
+  const duration = 5 * 1000; // 5 seconds
+  const animationEnd = Date.now() + duration;
+  const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+
+  function randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
+
+  const interval = setInterval(function() {
+    const timeLeft = animationEnd - Date.now();
+
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+      return;
+    }
+
+    const particleCount = 50 * (timeLeft / duration);
+    // since particles fall down, start from top half of the screen
+    confetti(Object.assign({}, defaults, { 
+      particleCount, 
+      origin: { x: randomInRange(0.1, 0.9), y: Math.random() - 0.2 }
+    }));
+  }, 250);
 }
 
 // Restart Quiz - allow a retake of the same quiz.
