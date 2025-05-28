@@ -27,6 +27,7 @@ let quizMode = ''; // 'long' or 'mcq'
 
 // modal content for introduction
 window.addEventListener('load', () => {
+  document.getElementById('backToStartBtn').classList.add('hidden');
   const modal = document.getElementById('introModal');
   const startBtn = document.getElementById('startQuizBtn');
 
