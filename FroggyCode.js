@@ -754,12 +754,14 @@ const cam = new Camera(video, {
     const sumFps = fpsSamples.reduce((sum, sample) => sum + sample.fps, 0);
     const meanFps = fpsSamples.length > 0 ? sumFps / fpsSamples.length : 0;
     
+    // Display the mean FPS:
+    fpsDisplay.textContent = `FPS (10s avg): ${meanFps.toFixed(1)}`;
+    
     // Adjust dynamicClosedFrames if needed – using the instantaneous FPS or the mean FPS:
     dynamicClosedFrames = Math.max(1, Math.floor(meanFps * 0.1));
-    
+
     if (meanFps < 8) {
       warningDisplay.textContent = "Warning: Low FPS (<8) -- detections may be inaccurate.";
-      fpsDisplay.textContent = `FPS (10s avg): ${meanFps.toFixed(1)}`;
     } else {
       warningDisplay.textContent = "";
     }
