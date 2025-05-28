@@ -50,6 +50,7 @@ document.getElementById('mcqModeBtn').addEventListener('click', () => {
   quizMode = 'mcq';
   document.getElementById('mode-selection').classList.add('hidden');
   document.getElementById('upload-section').classList.remove('hidden');
+  document.getElementById('backToStartBtn').classList.remove('hidden');
   document.getElementById('formatInstructions').innerHTML =
     "<strong>MCQ Format:</strong> Question, Answer, Option A, Option B, Option C";
 
@@ -79,6 +80,7 @@ document.getElementById('longAnswerModeBtn').addEventListener('click', () => {
   quizMode = 'long';
   document.getElementById('mode-selection').classList.add('hidden');
   document.getElementById('upload-section').classList.remove('hidden');
+  document.getElementById('backToStartBtn').classList.remove('hidden');
   document.getElementById('formatInstructions').innerHTML =
     "<strong>Long Answer Format:</strong> Question, Answer";
   uploadOptionContainer.classList.remove('hidden');
