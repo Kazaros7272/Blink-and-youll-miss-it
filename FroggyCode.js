@@ -27,7 +27,6 @@ let quizMode = ''; // 'long' or 'mcq'
 
 // modal content for introduction
 window.addEventListener('load', () => {
-  document.getElementById('backToStartBtn').classList.add('hidden');
   const modal = document.getElementById('introModal');
   const startBtn = document.getElementById('startQuizBtn');
 
@@ -40,6 +39,7 @@ window.addEventListener('load', () => {
   }
 
   startBtn.addEventListener('click', () => {
+    document.getElementById('backToStartBtn').classList.add('hidden');
     modal.style.display = 'none';
   });
 });
