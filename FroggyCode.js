@@ -530,6 +530,7 @@ document.getElementById('backToStartBtn').addEventListener('click', () => {
   document.getElementById('quiz-section-mcq').classList.add('hidden');
   document.getElementById('autoMarkContainer').classList.add('hidden');
   document.getElementById('upload-section').classList.add('hidden');
+  document.getElementById('exitQuizBtn').classList.add('hidden');
 
   // Reset UI and internal state
   quizMode = '';
