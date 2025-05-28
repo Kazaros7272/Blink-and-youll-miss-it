@@ -158,6 +158,9 @@ uploadBtn.addEventListener('click', () => {
 });
 
 document.getElementById('exitQuizBtn').addEventListener('click', () => {
+  // Hide the question section
+  document.getElementById('quiz-section-long').classList.add('hidden');
+  document.getElementById('quiz-section-mcq').classList.add('hidden');
   // Mark unanswered questions as skipped
   for (let i = currentQuestionIndex; i < quizData.length; i++) {
     const q = quizData[i];
@@ -466,6 +469,7 @@ document.getElementById('backToStartBtn').addEventListener('click', () => {
   document.getElementById('quiz-section-long').classList.add('hidden');
   document.getElementById('quiz-section-mcq').classList.add('hidden');
   document.getElementById('autoMarkContainer').classList.add('hidden');
+  document.getElementById('upload-section').classList.add('hidden');
 
   // Reset UI and internal state
   quizMode = '';
@@ -475,6 +479,15 @@ document.getElementById('backToStartBtn').addEventListener('click', () => {
   blinkCount = 0;
   quizStartTime = null;
   userAnswerInput.value = '';
+
+  //Reset radio selection to default
+  //document.querySelectorAll('input[name="sourceType"]').forEach(el => el.checked = false);
+  const radios = document.querySelectorAll('input[name="sourceType"]');
+  radios.forEach(radio => {
+    radio.checked = (radio.value === 'upload'); // check only the upload option
+    radio.dispatchEvent(new Event('change'));  // trigger change event
+  });
+
 
   // Show start page
   document.getElementById('mode-selection').classList.remove('hidden');
