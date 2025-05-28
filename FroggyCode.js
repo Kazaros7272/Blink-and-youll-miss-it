@@ -735,7 +735,7 @@ faceMesh.onResults((results) => {
 let lastFrameTime = performance.now();
 let fpsSamples = []; // Array to hold FPS samples {time, fps}
 
-// inside your Camera onFrame callback:
+// inside your Camera onFrame callback
 const cam = new Camera(video, {
   onFrame: async () => {
     const now = performance.now();
