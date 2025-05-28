@@ -552,6 +552,7 @@ document.getElementById('backToStartBtn').addEventListener('click', () => {
 
   // Show start page
   document.getElementById('mode-selection').classList.remove('hidden');
+  document.getElementById('backToStartBtn').classList.add('hidden');
 });
 
 /* Export results */
