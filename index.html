@@ -12,6 +12,27 @@
 </head>
 
 <body>
+
+  <!-- Intro Modal -->
+  <div id="introModal" class="modal-overlay">
+    <div class="modal-content">
+      <h2>Welcome to <em>Blink and You’ll Miss It</em> !</h2>
+      <p>
+        <b>WARNING</b>: Side effects may include excessive eye dryness, self esteem destruction and uncontrollable competitiveness.
+      </p>
+      <p>
+        Blink at your own risk. T&Cs apply.
+      </p>
+      <ul>
+        <li>Blink = Skip</li>
+        <li>Quiz Modes: Long Answer or MCQ</li>
+        <li>Review your stats at the end</li>
+        <li>Score 80%+ to unlock a special surprise!</li>
+      </ul>
+      <button id="startQuizBtn" class="startQuiz-btn">Got it! Let’s go</button>
+    </div>
+  </div>
+
   <h1>Blink and you'll miss it!</h1>
   
   <!-- Home Page button -->
@@ -122,9 +143,10 @@
     </div>
   </div>
 
+
   <!-- Main js file -->
   <script src="FroggyCode.js"></script>
-  
+
   <!-- PapaParse Library for parsing CSV file-->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
 
@@ -135,7 +157,7 @@
   <!-- For exporting results -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-  <!-- For fancy firework/ confetti effects -->
+  <!-- For fancy confetti/ firework effects -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
 
 </body>
