@@ -28,6 +28,7 @@ Blink and you'll miss it is a fun and simple web application that gamifies answe
   - **Long Answer**: `Question, Answer`
   - **MCQ**: `Question, Answer, Option 1, Option 2, Option 3`
 - **PDF/CSV Export**: Done via JavaScript functions using [jsPDF](https://github.com/parallax/jsPDF) (for PDF) and manual string generation (for CSV).
+- **Confetti Effects**: Celebratory confetti triggered when the user scores 80% or higher, created using canvas-confetti loaded from [CDN] (https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js).
 
 ## Setup & Usage
 
