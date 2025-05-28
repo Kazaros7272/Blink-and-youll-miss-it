@@ -24,6 +24,26 @@ const readyMadeContainer = document.getElementById('readyMadeContainer');
 
 let quizMode = ''; // 'long' or 'mcq'
 
+
+// modal content for introduction
+window.addEventListener('load', () => {
+  const modal = document.getElementById('introModal');
+  const startBtn = document.getElementById('startQuizBtn');
+
+  // only show once per session
+  if (!sessionStorage.getItem('introShown')) {
+    modal.style.display = 'flex';
+    sessionStorage.setItem('introShown', 'true');
+  } else {
+    modal.style.display = 'none';
+  }
+
+  startBtn.addEventListener('click', () => {
+    modal.style.display = 'none';
+  });
+});
+
+
 // --- Mode Selection ---
 
 document.getElementById('mcqModeBtn').addEventListener('click', () => {
