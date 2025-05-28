@@ -733,19 +733,41 @@ faceMesh.onResults((results) => {
 
 let lastFrameTime = performance.now();
 let currentFps = 30;
+// Global variables for FPS averaging:
+let lastFrameTime = performance.now();
+let fpsSamples = []; // Array to hold FPS samples {time, fps}
+
+// inside your Camera onFrame callback:
 const cam = new Camera(video, {
   onFrame: async () => {
     const now = performance.now();
     const delta = now - lastFrameTime;
-    currentFps = 1000 / delta;
+    const currentFps = 1000 / delta;
     lastFrameTime = now;
-    fpsDisplay.textContent = `FPS: ${currentFps.toFixed(1)}`;
-    dynamicClosedFrames = Math.max(1, Math.floor(currentFps * 0.1));
-    if (currentFps < 8) {
+    
+    // Add the current FPS sample with its timestamp:
+    fpsSamples.push({ time: now, fps: currentFps });
+    
+    // Remove samples older than 10 seconds:
+    const tenSecondsAgo = now - 10000;
+    fpsSamples = fpsSamples.filter(sample => sample.time >= tenSecondsAgo);
+    
+    // Calculate the mean FPS over the last 10 seconds:
+    const sumFps = fpsSamples.reduce((sum, sample) => sum + sample.fps, 0);
+    const meanFps = fpsSamples.length > 0 ? sumFps / fpsSamples.length : 0;
+    
+    // Display the mean FPS:
+    fpsDisplay.textContent = `FPS (10s avg): ${meanFps.toFixed(1)}`;
+    
+    // Adjust dynamicClosedFrames if needed – using the instantaneous FPS or the mean FPS:
+    dynamicClosedFrames = Math.max(1, Math.floor(meanFps * 0.1));
+    
+    if (meanFps < 8) {
       warningDisplay.textContent = "Warning: Low FPS (<8) -- detections may be inaccurate.";
     } else {
       warningDisplay.textContent = "";
     }
+    
     await faceMesh.send({ image: video });
   },
   width: 480,
